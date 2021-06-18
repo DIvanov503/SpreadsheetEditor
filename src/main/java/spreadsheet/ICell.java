@@ -12,4 +12,7 @@ public interface ICell {
      */
     Object getValue();
 
+    String getFormula();
+
+    void setValue(Object value);
 }

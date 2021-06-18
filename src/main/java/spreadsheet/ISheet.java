@@ -12,7 +12,7 @@ public interface ISheet {
 
     ICell getCellAt(int row, int col);
 
-    ICell getCellAt(String ref);
+    Column getColumnAt(int col);
 
     /**
      * Get value at a specific cell
@@ -22,14 +22,6 @@ public interface ISheet {
      * @return value object
      */
     Object getValueAt(int row, int col);
-
-    /**
-     * Get value at a specific cell
-     *
-     * @param ref coordinate reference
-     * @return value object
-     */
-    Object getValueAt(String ref);
 
     /**
      * Remove a column by index
@@ -78,15 +70,6 @@ public interface ISheet {
      * @param name new name
      */
     void setName(String name);
-
-    /**
-     * Set insert cell value into the sheet
-     *
-     * @param cell to insert
-     * @param row row index
-     * @param col column index
-     */
-    void setCellAt(ICell cell, int row, int col);
 
     /**
      * Get the number of rows

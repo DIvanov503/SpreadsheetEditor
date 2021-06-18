@@ -1,13 +1,16 @@
 package spreadsheet;
 
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 
 public class SpreadsheetOpener {
-    public static ISpreadsheet open(String fileName) throws IOException, UnsupportedFileExtensionException {
+    public static ISpreadsheet open(String fileName) throws IOException, UnsupportedFileExtensionException, ParserConfigurationException, SAXException {
         ISpreadsheet answer;
         if (fileName.toLowerCase().matches(".*\\.ods$")) {
-            answer = new ODSSpreadsheet();
+            answer = new Spreadsheet();
             answer.open(fileName);
         } else {
             throw new UnsupportedFileExtensionException("Unsupported file extension!");
@@ -15,7 +18,7 @@ public class SpreadsheetOpener {
         return answer;
     }
 
-    public static ISpreadsheet open(File file) throws IOException, UnsupportedFileExtensionException {
+    public static ISpreadsheet open(File file) throws IOException, UnsupportedFileExtensionException, ParserConfigurationException, SAXException {
         return open(file.getName());
     }
 

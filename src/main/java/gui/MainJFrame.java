@@ -1,13 +1,11 @@
 package gui;
 
 import spreadsheet.ISpreadsheet;
-import spreadsheet.ODSSpreadsheet;
+import spreadsheet.Spreadsheet;
 import spreadsheet.SpreadsheetOpener;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -28,7 +26,7 @@ public class MainJFrame extends JFrame {
         setJMenuBar(mainMenuBar);
 
         if (spreadsheet == null) {
-            spreadsheet = new ODSSpreadsheet();
+            spreadsheet = new Spreadsheet();
             spreadsheet.empty();
         }
         sheetTabbedPane = new SheetJTabbedPane(spreadsheet);
@@ -104,7 +102,7 @@ public class MainJFrame extends JFrame {
     public static int saveSpreadsheet(String fileName) {
         try {
             spreadsheet.save(fileName);
-        } catch (IOException e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(MainJFrame.getFrame(),
                     e.getMessage(),
                     "Error",

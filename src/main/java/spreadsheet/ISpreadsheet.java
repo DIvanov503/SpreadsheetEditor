@@ -1,7 +1,11 @@
 package spreadsheet;
 
-import org.jopendocument.dom.spreadsheet.Sheet;
 
+import formula.evaluator.CyclicDependencyException;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -15,19 +19,19 @@ public interface ISpreadsheet extends Iterable<ISheet> {
      *
      * @param fileName path to file
      */
-    void open(String fileName) throws IOException;
+    void open(String fileName) throws IOException, ParserConfigurationException, SAXException;
 
     /**
      * Saves spreadsheet to file
      *
      * @param fileName path to file
      */
-    void save(String fileName) throws IOException;
+    void save(String fileName) throws IOException, TransformerConfigurationException, ParserConfigurationException;
 
     /**
      * Saves spreadsheet to the same file
      */
-    void save() throws IOException;
+    void save() throws IOException, ParserConfigurationException, TransformerConfigurationException;
 
     /**
      * Creates an empty spreadsheet with one sheet
@@ -84,6 +88,11 @@ public interface ISpreadsheet extends Iterable<ISheet> {
      * @return the name of the file, if exists, otherwise null
      */
     String getFileName();
+
+    /**
+     * Evaluate formulae
+     */
+    void calculate() throws CyclicDependencyException;
 
     @Override
     default Iterator<ISheet> iterator() {

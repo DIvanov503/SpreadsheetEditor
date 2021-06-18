@@ -13,6 +13,13 @@ The current version supports basic display and editor features:
 - creating new sheets within spreadsheets
 - parsing formulas as per OASIS Standard (http://docs.oasis-open.org/office/v1.2/OpenDocument-v1.2-part2.pdf)
 
+### Formula Grammar
+`Formula :: = Expression`  
+`Expression ::= "(" Expression ")" | Expression BinOp Expression | UnOp Expression | String | Double | Integer | Boolean | Cell`  
+`BinOp ::= "+" | "-" | "*" | "/" | "^" | "&" | "|" | "<" | ">" | "<=" | ">=" | "=" | "<>"`  
+`UnOp ::= "+" | "-" | "!"`  
+`Cell ::= [Name "."] CellRef`
+
 ## Build
 
 ### Dependencies

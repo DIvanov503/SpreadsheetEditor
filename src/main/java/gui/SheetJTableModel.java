@@ -1,5 +1,6 @@
 package gui;
 
+import formula.evaluator.CyclicDependencyException;
 import spreadsheet.ISheet;
 
 import javax.swing.table.AbstractTableModel;
@@ -38,6 +39,11 @@ public class SheetJTableModel extends AbstractTableModel implements AdjustmentLi
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         sheet.setValueAt(aValue, rowIndex, columnIndex);
+        try {
+            MainJFrame.getSpreadsheet().calculate();
+        } catch (CyclicDependencyException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
