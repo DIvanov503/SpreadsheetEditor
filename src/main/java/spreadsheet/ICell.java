@@ -1,5 +1,7 @@
 package spreadsheet;
 
+import formula.AST.Formula;
+
 /**
  * This interface represents a cell.
  */
@@ -12,7 +14,13 @@ public interface ICell {
      */
     Object getValue();
 
-    String getFormula();
+    String getFormulaString();
+
+    Formula getFormula();
+
+    ISheet getSheet();
 
     void setValue(Object value);
+
+    void updateValue(Object value);
 }

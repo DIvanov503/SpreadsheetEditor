@@ -2,6 +2,7 @@ package spreadsheet;
 
 
 import formula.evaluator.CyclicDependencyException;
+import formula.evaluator.DependencyGraph;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -74,6 +75,15 @@ public interface ISpreadsheet extends Iterable<ISheet> {
      * @param index index of the sheet
      */
     ISheet getSheet(int index);
+
+    /**
+     * Get a sheet by given name
+     *
+     * @param index index of the sheet
+     */
+    ISheet getSheet(String name);
+
+    DependencyGraph getDependencyGraph();
 
     /**
      * Check whether the sheet has been modified

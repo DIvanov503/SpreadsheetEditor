@@ -11,4 +11,6 @@ public interface IColumn {
     void setColNumber(int colNumber);
 
     int getColNumber();
+
+    ISheet getSheet();
 }

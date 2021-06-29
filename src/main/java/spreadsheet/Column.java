@@ -12,7 +12,7 @@ import java.util.SortedMap;
 public class Column implements IColumn {
     Map<Integer, Cell> cellMap = new HashMap<Integer, Cell>();
     int colNumber;
-    final Sheet sheet;
+    private final Sheet sheet;
 
 
     public Column(Sheet sheet, int colNumber) {
@@ -32,6 +32,11 @@ public class Column implements IColumn {
 
     public ICell getCellAt(int row) {
         return cellMap.getOrDefault(row, null);
+    }
+
+    @Override
+    public ISheet getSheet() {
+        return sheet;
     }
 
     @Override

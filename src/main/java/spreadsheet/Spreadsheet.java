@@ -2,6 +2,7 @@ package spreadsheet;
 
 import formula.evaluator.CyclicDependencyException;
 import formula.evaluator.DependencyGraph;
+import formula.evaluator.EvaluatorVisitor;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -18,15 +19,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Spreadsheet implements ISpreadsheet {
     private File file;
-    //private Map<Integer, Column> columnMap = new HashMap<Integer, Column>();
     private final List<Sheet> sheetList = new ArrayList<>();
+    private final Map<String, Sheet> nameToSheet = new HashMap<>();
     boolean isModified = false;
     String fileName = null;
-    DependencyGraph dependencyGraph;
+    DependencyGraph dependencyGraph = new DependencyGraph();;
 
     @Override
     public void open(String fileName) throws IOException, ParserConfigurationException, SAXException {
@@ -45,6 +48,7 @@ public class Spreadsheet implements ISpreadsheet {
             Element sheetElement = (Element)node;
             sheetList.add(Sheet.sheetFromXMLElement(this, sheetElement));
         }
+        sheetList.forEach((sheet) -> nameToSheet.put(sheet.getName(), sheet));
         this.fileName = fileName;
         isModified = false;
     }
@@ -92,7 +96,8 @@ public class Spreadsheet implements ISpreadsheet {
     @Override
     public void empty() {
         sheetList.clear();
-        sheetList.add(new Sheet(this));
+        nameToSheet.clear();
+        addSheet();
         fileName = null;
         isModified = false;
     }
@@ -105,7 +110,10 @@ public class Spreadsheet implements ISpreadsheet {
     @Override
     public Sheet addSheet() {
         isModified = true;
-        return new Sheet(this, "Sheet" + (getSheetCount() + 1));
+        Sheet newSheet = new Sheet(this, "Sheet" + (getSheetCount() + 1));
+        sheetList.add(newSheet);
+        nameToSheet.put(newSheet.getName(), newSheet);
+        return newSheet;
     }
 
     @Override
@@ -119,6 +127,11 @@ public class Spreadsheet implements ISpreadsheet {
     }
 
     @Override
+    public ISheet getSheet(String name) {
+        return nameToSheet.get(name);
+    }
+
+    @Override
     public boolean isModified() {
         return isModified;
     }
@@ -129,12 +142,13 @@ public class Spreadsheet implements ISpreadsheet {
     }
 
     @Override
-    public void calculate() throws CyclicDependencyException {
-        if (dependencyGraph == null) {
-            dependencyGraph = new DependencyGraph();
-        }
-        sheetList.forEach(s -> s.addDependencies(dependencyGraph));
-        dependencyGraph.topologicalSort();
+    public DependencyGraph getDependencyGraph(){
+        return dependencyGraph;
+    }
 
+    @Override
+    public void calculate() throws CyclicDependencyException {
+        sheetList.forEach(s -> s.addDependencies(dependencyGraph));
+        dependencyGraph.topologicalSort().forEach((cell) -> EvaluatorVisitor.getEvaluatorVisitor().evaluate(cell));
     }
 }

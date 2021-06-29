@@ -19,6 +19,7 @@ public class SheetJTableModel extends AbstractTableModel implements AdjustmentLi
         this.sheet = sheet;
         rowCount = Math.max(sheet.getRowCount(), 70);
         columnCount = Math.max(sheet.getColumnCount(), 30);
+        new TableCellListener();
     }
 
     @Override
@@ -48,7 +49,7 @@ public class SheetJTableModel extends AbstractTableModel implements AdjustmentLi
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return rowIndex != 0 && columnIndex != 0;
+        return true;
     }
 
     @Override

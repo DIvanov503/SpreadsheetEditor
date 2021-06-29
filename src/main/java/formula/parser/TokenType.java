@@ -19,7 +19,7 @@ public enum TokenType {
     LT("<"),
     GT(">"),
     POW("\\^"),
-    REF("[A-Z]+[1-9][0-9]*"),
+    REF("[A-Z]+[1-9]\\d*"),
     ID("[A-Za-z][A-Za-z0-9_]*"),
     DOT("\\."),
     COLON(":"),

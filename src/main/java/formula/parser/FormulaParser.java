@@ -420,14 +420,16 @@ public class FormulaParser {
                                     stack.add(range);
                                 }
                                 case SheetCell -> {
-                                    CellReference ref = new CellReference();
-                                    ref.reference = ((Token)stack.pop()).value;
-                                    System.out.println(ref.reference + " ????");
+                                    String reference = ((Token)stack.pop()).value;
+                                    CellReference ref;
+                                    System.out.println(reference + " ????");
                                     if (action.tokenNumber == 3) {
                                         stack.pop();
                                         stack.pop();
                                         stack.pop();
-                                        ref.sheet = ((Token)stack.pop()).value;
+                                        ref = new CellReference(((Token)stack.pop()).value, reference);
+                                    } else {
+                                        ref = new CellReference(null, reference);
                                     }
                                     currentState = (State)stack.peek();
                                     stack.add(ref);

@@ -94,4 +94,5 @@ public interface ISheet {
      */
     void setValueAt(Object value, int row, int col);
 
+    ISpreadsheet getSpreadsheet();
 }

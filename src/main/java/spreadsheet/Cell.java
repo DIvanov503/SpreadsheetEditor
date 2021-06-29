@@ -32,12 +32,25 @@ public class Cell implements ICell {
     }
 
     @Override
-    public String getFormula() {
-        return null;
+    public String getFormulaString() {
+        return formulaRaw;
+    }
+
+    @Override
+    public Formula getFormula() {
+        return formula;
+    }
+
+    @Override
+    public ISheet getSheet() {
+        return column.getSheet();
     }
 
     @Override
     public void setValue(Object value) {
+        if (formula != null) {
+            getSheet().getSpreadsheet().getDependencyGraph().removeDependenciesFrom(this);
+        }
         if (value instanceof String) {
             String strValue = (String) value;
             try {
@@ -71,19 +84,26 @@ public class Cell implements ICell {
                 formulaRaw = null;
                 return;
             }
-            /* Just to try out the parser
-             * TODO handle formula */
             if (strValue.matches("^=.*")) {
                 FormulaParser parser = FormulaParser.getParser();
                 Formula formula = parser.parse(strValue.substring(1));
                 if (formula != null) {
                     this.formula = formula;
                     this.formulaRaw = strValue;
+                    DependencyVisitor.getDependencyVisitor().addDependencies(
+                            getSheet().getSpreadsheet().getDependencyGraph(),
+                            formula,
+                            this);
                 }
             } else {
                 formulaRaw = null;
             }
         }
+        this.value = value;
+    }
+
+    @Override
+    public void updateValue(Object value) {
         this.value = value;
     }
 
@@ -108,10 +128,10 @@ public class Cell implements ICell {
         if (formula == null) {
             return;
         }
-        DependencyVisitor.getDependencyVisitor().addDependencies(dependencyGraph, formula, getCellReference());
+        DependencyVisitor.getDependencyVisitor().addDependencies(dependencyGraph, formula, this);
     }
 
     public String getCellReference() {
-        return column.sheet.getName() + "." + ColumnLabelConverter.toLabel(column.getColNumber()) + row;
+        return column.getSheet().getName() + "." + ColumnLabelConverter.toLabel(column.getColNumber()) + row;
     }
 }

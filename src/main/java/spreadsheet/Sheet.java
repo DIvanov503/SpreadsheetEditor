@@ -99,6 +99,11 @@ public class Sheet implements ISheet {
     }
 
     @Override
+    public Spreadsheet getSpreadsheet() {
+        return spreadsheet;
+    }
+
+    @Override
     public void setValueAt(Object value, int row, int col) {
         Column column = getColumnAt(col);
         if (column == null) {

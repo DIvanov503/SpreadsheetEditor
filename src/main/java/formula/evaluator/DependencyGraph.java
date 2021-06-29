@@ -1,21 +1,24 @@
 package formula.evaluator;
 
 import formula.AST.CellReference;
+import spreadsheet.ICell;
 
 import java.util.*;
 
 public class DependencyGraph {
-    Map<String, Set<String>> adjacencyMatrix = new HashMap<>();
+    Map<ICell, Set<ICell>> adjacencyMatrix = new HashMap<>();
 
-    Map<String, Color> colorMap = new HashMap<>();
-    Set<String> vertexSet = new HashSet<>();
+    Map<ICell, Color> colorMap = new HashMap<>();
+    Set<ICell> vertexSet = new HashSet<>();
 
-    public void addDependency(String from, String to) {
+    List<ICell> sortedCells = new ArrayList<>();
+
+    public void addDependency(ICell from, ICell to) {
         System.out.println(from+"->"+to);
         if (adjacencyMatrix.keySet().contains(from)) {
             adjacencyMatrix.get(from).add(to);
         } else {
-            Set<String> dests = new HashSet<String>();
+            Set<ICell> dests = new HashSet<>();
             dests.add(to);
             adjacencyMatrix.put(from, dests);
         }
@@ -23,26 +26,36 @@ public class DependencyGraph {
         vertexSet.add(to);
     }
 
-    public void topologicalSort() throws CyclicDependencyException {
+    public void removeDependenciesFrom(ICell from) {
+        adjacencyMatrix.remove(from);
+        vertexSet.clear();
+        vertexSet.addAll(adjacencyMatrix.keySet());
+        adjacencyMatrix.values().forEach((vertices) -> vertexSet.addAll(vertices));
+    }
+
+    public List<ICell> topologicalSort() throws CyclicDependencyException {
         System.out.println(vertexSet.size());
+        sortedCells.clear();
         vertexSet.forEach(v -> colorMap.put(v, Color.White));
-        for (String vertex : vertexSet) {
+        for (ICell vertex : vertexSet) {
             if (colorMap.get(vertex) == Color.White) {
                 DFSVisit(vertex);
             }
         }
+        return sortedCells;
     }
 
-    private void DFSVisit(String vertex) throws CyclicDependencyException {
+    private void DFSVisit(ICell vertex) throws CyclicDependencyException {
         System.out.println(colorMap.get(vertex));
         if (colorMap.get(vertex) == Color.Gray) {
             throw new CyclicDependencyException();
         }
         colorMap.put(vertex, Color.Gray);
-        for (String successor : adjacencyMatrix.getOrDefault(vertex, new HashSet<>(0))) {
+        for (ICell successor : adjacencyMatrix.getOrDefault(vertex, new HashSet<>(0))) {
             DFSVisit(successor);
         }
         colorMap.put(vertex, Color.Black);
+        sortedCells.add(vertex);
     }
 
     private enum Color {

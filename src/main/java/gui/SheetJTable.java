@@ -3,9 +3,7 @@ package gui;
 import spreadsheet.ISheet;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.*;
 
 public class SheetJTable extends JTable {
     private JTable rowTableHeader = new JTable(new AbstractTableModel() {
@@ -47,5 +45,15 @@ public class SheetJTable extends JTable {
 
     public JTable getRowTableHeader() {
         return rowTableHeader;
+    }
+
+    @Override
+    public TableCellEditor getCellEditor(int row, int column) {
+        TableColumn tableColumn = getColumnModel().getColumn(column);
+        TableCellEditor editor = tableColumn.getCellEditor();
+        if (editor == null) {
+            editor = getDefaultEditor(getColumnClass(column));
+        }
+        return editor;
     }
 }

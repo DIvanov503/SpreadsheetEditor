@@ -1,6 +1,8 @@
 package formula.evaluator;
 
 import formula.AST.*;
+import spreadsheet.ICell;
+import spreadsheet.ISheet;
 
 import java.util.Arrays;
 
@@ -10,7 +12,7 @@ public class DependencyVisitor implements Visitor {
 
     private static DependencyVisitor dependencyVisitor;
 
-    private String ref;
+    private ICell cell;
 
     public static DependencyVisitor getDependencyVisitor() {
         if (dependencyVisitor == null) {
@@ -19,9 +21,9 @@ public class DependencyVisitor implements Visitor {
         return dependencyVisitor;
     }
 
-    public void addDependencies(DependencyGraph dependencyGraph, Formula formula, String ref) {
+    public void addDependencies(DependencyGraph dependencyGraph, Formula formula, ICell cell) {
         this.dependencyGraph = dependencyGraph;
-        this.ref = ref;
+        this.cell = cell;
         visitFormula(formula);
     }
 
@@ -48,14 +50,12 @@ public class DependencyVisitor implements Visitor {
 
     @Override
     public void visitCellReference(CellReference ref) {
-        dependencyGraph.addDependency(this.ref,
-                (ref.sheet == null
-                        ? Arrays.stream(this.ref.split("\\.")).findFirst().orElseThrow()
-                        : ref.sheet) + "." + ref.reference);
+        ISheet targetSheet = ref.sheet == null ? cell.getSheet() : cell.getSheet().getSpreadsheet().getSheet(ref.sheet);
+        dependencyGraph.addDependency(cell, targetSheet.getCellAt(ref.row, ref.column));
     }
 
     @Override
-    public void visitParenExpression(ParenExpression exp) {
+    public void visitParenExpression(ParenExpression exp) throws TypeErrorException {
         exp.exp.accept(this);
     }
 
