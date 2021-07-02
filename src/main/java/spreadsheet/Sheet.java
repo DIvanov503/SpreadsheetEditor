@@ -34,12 +34,15 @@ public class Sheet implements ISheet {
     @Override
     public ICell getCellAt(int row, int col) {
         Column column = getColumnAt(col);
-        return column == null ? null : column.getCellAt(row);
+        return column.getCellAt(row);
     }
 
     @Override
     public Column getColumnAt(int col) {
-        return columnMap.getOrDefault(col, null);
+        if (columnMap.get(col) == null) {
+            columnMap.put(col, new Column(this, col));
+        }
+        return columnMap.get(col);
     }
 
     @Override
@@ -106,10 +109,6 @@ public class Sheet implements ISheet {
     @Override
     public void setValueAt(Object value, int row, int col) {
         Column column = getColumnAt(col);
-        if (column == null) {
-            column = new Column(this, col);
-            columnMap.put(col, column);
-        }
         column.setValueAt(value, row);
     }
 

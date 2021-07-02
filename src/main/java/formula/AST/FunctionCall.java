@@ -3,8 +3,8 @@ package formula.AST;
 import java.util.List;
 
 public class FunctionCall implements Expression {
-    String functionName;
-    List<Expression> parameters;
+    public String functionName;
+    public List<Expression> argumentList;
 
     @Override
     public void accept(Visitor v) {

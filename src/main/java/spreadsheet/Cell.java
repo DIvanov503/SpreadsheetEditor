@@ -1,10 +1,13 @@
 package spreadsheet;
 
 import formula.AST.Formula;
+import formula.evaluator.EvaluatorVisitor;
 import formula.parser.FormulaParser;
 import formula.Type;
 import formula.evaluator.DependencyGraph;
 import formula.evaluator.DependencyVisitor;
+import formula.parser.ParseErrorException;
+import gui.MainJFrame;
 import org.w3c.dom.Element;
 
 public class Cell implements ICell {
@@ -14,11 +17,13 @@ public class Cell implements ICell {
     private Object value;
     private Type type = Type.Undef;
     int row;
-    final Column column;
+    private Column column;
+    private CellAddress address;
 
     Cell(Column column, int row) {
         this.row = row;
         this.column = column;
+        address = new CellAddress(getSheet().getName(), row, column.getColNumber());
     }
 
     Cell(Column column, int row, Object value) {
@@ -47,9 +52,20 @@ public class Cell implements ICell {
     }
 
     @Override
-    public void setValue(Object value) {
+    public int getRow() {
+        return row;
+    }
+
+    @Override
+    public int getColumn() {
+        return column.getColNumber();
+    }
+
+    @Override
+    public void setValue(Object value) throws ParseErrorException {
         if (formula != null) {
-            getSheet().getSpreadsheet().getDependencyGraph().removeDependenciesFrom(this);
+            System.out.println("rewrite" + value);
+            getSheet().getSpreadsheet().getDependencyGraph().removeDependenciesFrom(address);
         }
         if (value instanceof String) {
             String strValue = (String) value;
@@ -86,7 +102,7 @@ public class Cell implements ICell {
             }
             if (strValue.matches("^=.*")) {
                 FormulaParser parser = FormulaParser.getParser();
-                Formula formula = parser.parse(strValue.substring(1));
+                Formula formula = parser.parse(strValue.substring(1), getSheet().getName());
                 if (formula != null) {
                     this.formula = formula;
                     this.formulaRaw = strValue;
@@ -94,6 +110,8 @@ public class Cell implements ICell {
                             getSheet().getSpreadsheet().getDependencyGraph(),
                             formula,
                             this);
+                    evaluate();
+                    return;
                 }
             } else {
                 formulaRaw = null;
@@ -103,8 +121,27 @@ public class Cell implements ICell {
     }
 
     @Override
+    public CellAddress getAddress() {
+        return address;
+    }
+
+    @Override
     public void updateValue(Object value) {
         this.value = value;
+        MainJFrame.redrawTable();
+    }
+
+    @Override
+    public void evaluate() {
+        if (formula == null) {
+            return;
+        }
+        System.out.println("Eval");
+        EvaluatorVisitor.getEvaluatorVisitor().evaluate(this);
+        System.out.println("eval" + getSheet().getSpreadsheet().getDependencyGraph().usedBy(address));
+        getSheet().getSpreadsheet().getDependencyGraph().usedBy(address).forEach((address)
+                -> getSheet().getSpreadsheet().getSheet(address.sheetName())
+                .getCellAt(address.row(), address.column()).evaluate());
     }
 
     public void save(Element cellElement) {
@@ -133,5 +170,10 @@ public class Cell implements ICell {
 
     public String getCellReference() {
         return column.getSheet().getName() + "." + ColumnLabelConverter.toLabel(column.getColNumber()) + row;
+    }
+
+    @Override
+    public String toString() {
+        return value == null ? "" : value.toString();
     }
 }

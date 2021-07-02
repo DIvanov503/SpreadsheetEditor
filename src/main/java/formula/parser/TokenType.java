@@ -1,8 +1,8 @@
 package formula.parser;
 
 public enum TokenType {
-    INT("-?[0-9]+"),
     DOUBLE("(-?[0-9]+|[0-9]*)(\\.[0-9]+|[eE][+-]?[0-9]+)"),
+    INT("-?[0-9]+"),
     BOOLEAN("(TRUE|FALSE|true|false)"),
     STRING("\"[^\"]*\""),
     PLUS("\\+"),
@@ -19,10 +19,11 @@ public enum TokenType {
     LT("<"),
     GT(">"),
     POW("\\^"),
-    REF("[A-Z]+[1-9]\\d*"),
+    REF("[A-Z]+[1-9]\\d*(?=[^\\w]|$)"),
     ID("[A-Za-z][A-Za-z0-9_]*"),
     DOT("\\."),
     COLON(":"),
+    COMMA(","),
     PARENLEFT("\\("),
     PARENRIGHT("\\)"),
     FINISH("$"),

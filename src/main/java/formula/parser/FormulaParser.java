@@ -39,9 +39,16 @@ public class FormulaParser {
         CellRange1,
         CellRange2,
         CellRange3,
-        SheetCell1,
+        SheetCell1OrCall1,
         SheetCell2,
         SheetCell3,
+        Call2,
+        Call3,
+        Call4,
+        CallNoArg3,
+        ArgList1,
+        ArgList2,
+        ArgList3,
         Cell1,
         Lit1
     }
@@ -58,6 +65,9 @@ public class FormulaParser {
         Paren,
         CellRange,
         SheetCell,
+        FunctionCall,
+        ArgList,
+        ArgListNonEmpty,
         Lit
     }
 
@@ -143,6 +153,7 @@ public class FormulaParser {
                 new Action(Action.Type.reduce, Nonterminal.CellRange, 3),
                 new Action(Action.Type.reduce, Nonterminal.SheetCell, 1),
                 new Action(Action.Type.reduce, Nonterminal.SheetCell, 3),
+                new Action(Action.Type.reduce, Nonterminal.FunctionCall, 3),
                 new Action(Action.Type.reduce, Nonterminal.Lit, 1));
         stateList = List.of(State.BoolAdd1,
                 State.BoolAdd3,
@@ -164,16 +175,22 @@ public class FormulaParser {
                 State.CellRange3,
                 State.Cell1,
                 State.SheetCell3,
+                State.Call4,
                 State.Lit1);
         for (TokenType type : TokenType.values()) {
             for (int i = 0; i < stateList.size(); ++i) {
                 actionTable[stateList.get(i).ordinal()][type.ordinal()] = actionList.get(i);
             }
         }
+        actionTable[State.Call2.ordinal()][TokenType.PARENRIGHT.ordinal()] = new Action(Action.Type.reduce, Nonterminal.ArgList, 0);
+        actionTable[State.ArgList1.ordinal()][TokenType.PARENRIGHT.ordinal()] = new Action(Action.Type.reduce, Nonterminal.ArgList, 1);
+        actionTable[State.ArgList3.ordinal()][TokenType.COMMA.ordinal()] = new Action(Action.Type.reduce, Nonterminal.ArgListNonEmpty, 3);
+        actionTable[State.ArgList3.ordinal()][TokenType.PARENRIGHT.ordinal()] = new Action(Action.Type.reduce, Nonterminal.ArgList, 3);
+        //actionTable[State.ParamList1.ordinal()][TokenType.PARENRIGHT.ordinal()] = new Action(Action.Type.reduce, Nonterminal.ArgList, 1);
         // shifts
         // elementary expressions
         actionList = List.of(new Action(Action.Type.shift, State.Lit1),
-                new Action(Action.Type.shift, State.SheetCell1),
+                new Action(Action.Type.shift, State.SheetCell1OrCall1),
                 new Action(Action.Type.shift, State.Cell1),
                 new Action(Action.Type.shift, State.Paren1));
         for (State state : List.of(State.Formula0,
@@ -186,7 +203,8 @@ public class FormulaParser {
                 State.NumUn1,
                 State.NumPow2,
                 State.Paren1,
-                State.CellRange2)) {
+                State.Call2,
+                State.ArgList2)) {
             for (TokenType type : List.of(TokenType.INT,
                     TokenType.DOUBLE,
                     TokenType.STRING)) {
@@ -202,7 +220,9 @@ public class FormulaParser {
                 State.BoolAdd2,
                 State.BoolMul2,
                 State.BoolUn1,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             actionTable[state.ordinal()][TokenType.NOT.ordinal()] = temp1;
         }
         temp1 = new Action(Action.Type.shift, State.NumUn1);
@@ -214,7 +234,9 @@ public class FormulaParser {
                 State.NumAdd2,
                 State.NumMul2,
                 State.NumUn1,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             for (TokenType type : List.of(TokenType.PLUS, TokenType.MINUS)) {
                 actionTable[state.ordinal()][type.ordinal()] = temp1;
             }
@@ -243,10 +265,14 @@ public class FormulaParser {
         }
         actionTable[State.NumPow1.ordinal()][TokenType.POW.ordinal()] = new Action(Action.Type.shift, State.NumPow2);
         actionTable[State.Paren2.ordinal()][TokenType.PARENRIGHT.ordinal()] = new Action(Action.Type.shift, State.Paren3);
+        actionTable[State.Call3.ordinal()][TokenType.PARENRIGHT.ordinal()] = new Action(Action.Type.shift, State.Call4);
         actionTable[State.CellRange1.ordinal()][TokenType.COLON.ordinal()] = new Action(Action.Type.shift, State.CellRange2);
-        actionTable[State.SheetCell1.ordinal()][TokenType.DOT.ordinal()] = new Action(Action.Type.shift, State.SheetCell2);
+        actionTable[State.SheetCell1OrCall1.ordinal()][TokenType.DOT.ordinal()] = new Action(Action.Type.shift, State.SheetCell2);
+        actionTable[State.SheetCell1OrCall1.ordinal()][TokenType.PARENLEFT.ordinal()] = new Action(Action.Type.shift, State.Call2);
         actionTable[State.SheetCell2.ordinal()][TokenType.REF.ordinal()] = new Action(Action.Type.shift, State.SheetCell3);
-
+        actionTable[State.ArgList1.ordinal()][TokenType.COMMA.ordinal()] = new Action(Action.Type.shift, State.ArgList2);
+        actionTable[State.CellRange2.ordinal()][TokenType.ID.ordinal()] = actionList.get(1);
+        actionTable[State.CellRange2.ordinal()][TokenType.REF.ordinal()] = actionList.get(2);
         // goto table
         goToTable = new State[State.values().length][Nonterminal.values().length];
         for (State state : List.of(State.Formula0,
@@ -258,11 +284,15 @@ public class FormulaParser {
                 State.NumMul2,
                 State.NumUn1,
                 State.NumPow2,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             goToTable[state.ordinal()][Nonterminal.Lit.ordinal()]
                     = goToTable[state.ordinal()][Nonterminal.CellRange.ordinal()]
                     = goToTable[state.ordinal()][Nonterminal.SheetCell.ordinal()]
-                    = goToTable[state.ordinal()][Nonterminal.Paren.ordinal()] = State.NumPow1;
+                    = goToTable[state.ordinal()][Nonterminal.Paren.ordinal()]
+                    = goToTable[state.ordinal()][Nonterminal.FunctionCall.ordinal()]
+                    = State.NumPow1;
             goToTable[state.ordinal()][Nonterminal.SheetCell.ordinal()] = State.CellRange1;
         }
         for (State state : List.of(State.Formula0,
@@ -273,7 +303,9 @@ public class FormulaParser {
                 State.NumAdd2,
                 State.NumMul2,
                 State.NumUn1,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             goToTable[state.ordinal()][Nonterminal.NumPow.ordinal()] = State.NumUnCoer1;
         }
         for (State state : List.of(State.Formula0,
@@ -283,7 +315,9 @@ public class FormulaParser {
                 State.Comp2,
                 State.NumAdd2,
                 State.NumMul2,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             goToTable[state.ordinal()][Nonterminal.NumUn.ordinal()] = State.NumMul1;
         }
         for (State state : List.of(State.Formula0,
@@ -292,7 +326,9 @@ public class FormulaParser {
                 State.BoolUn1,
                 State.Comp2,
                 State.NumAdd2,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             goToTable[state.ordinal()][Nonterminal.NumMul.ordinal()] = State.NumAdd1;
         }
         for (State state : List.of(State.Formula0,
@@ -300,25 +336,33 @@ public class FormulaParser {
                 State.BoolMul2,
                 State.BoolUn1,
                 State.Comp2,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             goToTable[state.ordinal()][Nonterminal.NumAdd.ordinal()] = State.Comp1;
         }
         for (State state : List.of(State.Formula0,
                 State.BoolAdd2,
                 State.BoolMul2,
                 State.BoolUn1,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             goToTable[state.ordinal()][Nonterminal.Comp.ordinal()] = State.BoolUnCoer1;
         }
         for (State state : List.of(State.Formula0,
                 State.BoolAdd2,
                 State.BoolMul2,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             goToTable[state.ordinal()][Nonterminal.BoolUn.ordinal()] = State.BoolMul1;
         }
         for (State state : List.of(State.Formula0,
                 State.BoolAdd2,
-                State.Paren1)) {
+                State.Paren1,
+                State.Call2,
+                State.ArgList2)) {
             goToTable[state.ordinal()][Nonterminal.BoolMul.ordinal()] = State.BoolAdd1;
         }
         goToTable[State.CellRange2.ordinal()][Nonterminal.SheetCell.ordinal()] = State.CellRange3;
@@ -331,12 +375,16 @@ public class FormulaParser {
         goToTable[State.BoolMul2.ordinal()][Nonterminal.BoolMul.ordinal()] = State.BoolMul3;
         goToTable[State.BoolAdd2.ordinal()][Nonterminal.BoolAdd.ordinal()] = State.BoolAdd3;
         goToTable[State.Paren1.ordinal()][Nonterminal.BoolAdd.ordinal()] = State.Paren2;
+        goToTable[State.Call2.ordinal()][Nonterminal.BoolAdd.ordinal()] = State.ArgList1;
+        goToTable[State.Call2.ordinal()][Nonterminal.ArgList.ordinal()] = State.Call3;
+        goToTable[State.Call2.ordinal()][Nonterminal.ArgListNonEmpty.ordinal()] = State.ArgList1;
+        goToTable[State.ArgList2.ordinal()][Nonterminal.BoolAdd.ordinal()] = State.ArgList3;
         goToTable[State.Formula0.ordinal()][Nonterminal.BoolAdd.ordinal()] = State.Formula1;
     }
 
-    public Formula parse(String input) {
+    public Formula parse(String input, String sheetName) {
         stack.empty();
-        stack.add(State.Formula0);
+        stack.push(State.Formula0);
         Lexer lexer = new Lexer(input);
         while (true) {
             State currentState = (State)stack.peek();
@@ -346,21 +394,22 @@ public class FormulaParser {
             Action action = actionTable[currentState.ordinal()][token.type.ordinal()];
             System.out.println(action);
             if (action == null) {
-                return null;
+                throw new ParseErrorException("Could not parse the formula");
             } else {
                 switch (action.type) {
                     case shift -> {
-                        stack.add(token);
-                        stack.add(action.state);
+                        stack.push(token);
+                        stack.push(action.state);
                     }
                     case reduce -> {
                         stack.pop();
-                        if (action.tokenNumber == 1 &&
-                                action.nonterminal != Nonterminal.Lit &&
-                                action.nonterminal != Nonterminal.SheetCell) {
+                        if (action.tokenNumber == 1
+                                && action.nonterminal != Nonterminal.Lit
+                                && action.nonterminal != Nonterminal.SheetCell
+                                && action.nonterminal != Nonterminal.ArgList) {
                             Object temp = stack.pop();
                             currentState = (State)stack.peek();
-                            stack.add(temp);
+                            stack.push(temp);
                         } else {
                             switch (action.nonterminal) {
                                 case BoolAdd, BoolMul, Comp, NumAdd, NumMul, NumPow -> {
@@ -386,7 +435,7 @@ public class FormulaParser {
                                     stack.pop();
                                     exp.right = (Expression)stack.pop();
                                     currentState = (State)stack.peek();
-                                    stack.add(exp);
+                                    stack.push(exp);
                                 }
                                 case NumUn, BoolUn -> {
                                     UnaryExpression unExp = new UnaryExpression();
@@ -396,7 +445,72 @@ public class FormulaParser {
                                             UnaryOperator.Plus :
                                             UnaryOperator.Minus;
                                     currentState = (State)stack.peek();
-                                    stack.add(unExp);
+                                    stack.push(unExp);
+                                }
+                                case FunctionCall -> {
+                                    System.out.println(stack);
+                                    FunctionCall call = new FunctionCall();
+                                    stack.pop();
+                                    stack.pop();
+                                    call.argumentList = (List<Expression>)stack.pop();
+                                    stack.pop();
+                                    stack.pop();
+                                    stack.pop();
+                                    call.functionName = ((Token)stack.pop()).value;
+                                    currentState = (State)stack.peek();
+                                    stack.push(call);
+                                }
+                                case ArgList -> {
+                                    switch (action.tokenNumber) {
+                                        case 0 -> {
+                                            stack.push(currentState);
+                                            stack.push(new ArrayList<Expression>());
+                                        }
+                                        case 1 -> {
+                                            Object value = stack.pop();
+                                            System.out.println("Arglist" + value + ":" + (value instanceof List<?>));
+                                            currentState = (State)stack.peek();
+                                            if (value instanceof List<?>) {
+                                                stack.push(value);
+                                            } else {
+                                                stack.push(List.of((Expression)value));
+                                            }
+                                        }
+                                        case 3 -> {
+                                            Object value2 = stack.pop();
+                                            stack.pop();
+                                            stack.pop();
+                                            stack.pop();
+                                            Object value1 = stack.pop();
+                                            currentState = (State)stack.peek();
+                                            if (value1 instanceof List<?>) {
+                                                ((List<Expression>) value1).add((Expression)value2);
+                                                stack.push(value1);
+                                            } else {
+                                                List<Expression> argList = new ArrayList<>();
+                                                argList.add((Expression)value1);
+                                                argList.add((Expression)value2);
+                                                stack.push(argList);
+                                            }
+                                        }
+                                    }
+                                }
+                                case ArgListNonEmpty -> {
+                                    Object value2 = stack.pop();
+                                    stack.pop();
+                                    stack.pop();
+                                    stack.pop();
+                                    Object value1 = stack.pop();
+                                    currentState = (State)stack.peek();
+                                    if (value1 instanceof List<?>) {
+                                        ((List<Expression>) value1).add((Expression)value2);
+                                        stack.push(value1);
+                                    } else {
+                                        List<Expression> argList = new ArrayList<>();
+                                        argList.add((Expression)value1);
+                                        argList.add((Expression)value2);
+                                        stack.push(argList);
+                                    }
                                 }
                                 case Paren -> {
                                     ParenExpression exp = new ParenExpression();
@@ -406,7 +520,7 @@ public class FormulaParser {
                                     stack.pop();
                                     stack.pop();
                                     currentState = (State)stack.peek();
-                                    stack.add(exp);
+                                    stack.push(exp);
                                 }
                                 case CellRange -> {
                                     BinaryExpression range = new BinaryExpression();
@@ -417,7 +531,7 @@ public class FormulaParser {
                                     stack.pop();
                                     range.left = (CellReference)stack.pop();
                                     currentState = (State)stack.peek();
-                                    stack.add(range);
+                                    stack.push(range);
                                 }
                                 case SheetCell -> {
                                     String reference = ((Token)stack.pop()).value;
@@ -429,32 +543,33 @@ public class FormulaParser {
                                         stack.pop();
                                         ref = new CellReference(((Token)stack.pop()).value, reference);
                                     } else {
-                                        ref = new CellReference(null, reference);
+                                        ref = new CellReference(sheetName, reference);
                                     }
                                     currentState = (State)stack.peek();
-                                    stack.add(ref);
+                                    stack.push(ref);
                                 }
                                 case Lit -> {
                                     System.out.println(stack);
+                                    System.out.println(stack.peek());
                                     Token litToken = (Token)stack.pop();
                                     switch (litToken.type) {
                                         case STRING -> {
                                             StringLiteral lit = new StringLiteral();
                                             lit.value = litToken.value;
                                             currentState = (State)stack.peek();
-                                            stack.add(lit);
+                                            stack.push(lit);
                                         }
                                         case INT -> {
                                             IntegerNumber num = new IntegerNumber();
                                             num.value = Integer.parseInt(litToken.value);
                                             currentState = (State)stack.peek();
-                                            stack.add(num);
+                                            stack.push(num);
                                         }
                                         case DOUBLE -> {
                                             DoubleNumber num = new DoubleNumber();
                                             num.value = Double.parseDouble(litToken.value);
                                             currentState = (State)stack.peek();
-                                            stack.add(num);
+                                            stack.push(num);
                                         }
                                     }
                                 }
@@ -463,7 +578,7 @@ public class FormulaParser {
                         System.out.println(currentState + "->" + goToTable[currentState.ordinal()][action.nonterminal.ordinal()]);
                         System.out.println(stack);
                         lexer.putToken(token);
-                        stack.add(goToTable[currentState.ordinal()][action.nonterminal.ordinal()]);
+                        stack.push(goToTable[currentState.ordinal()][action.nonterminal.ordinal()]);
                     }
                     case accept -> {
                         Formula formula = new Formula();

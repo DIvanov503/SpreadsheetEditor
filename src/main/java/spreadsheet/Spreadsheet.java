@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class Spreadsheet implements ISpreadsheet {
     private File file;
@@ -148,7 +149,9 @@ public class Spreadsheet implements ISpreadsheet {
 
     @Override
     public void calculate() throws CyclicDependencyException {
-        sheetList.forEach(s -> s.addDependencies(dependencyGraph));
-        dependencyGraph.topologicalSort().forEach((cell) -> EvaluatorVisitor.getEvaluatorVisitor().evaluate(cell));
+        //sheetList.forEach(s -> s.addDependencies(dependencyGraph));
+        dependencyGraph.topologicalSort().stream().filter(Predicate.not(Predicate.isEqual(null))).forEach((cell) -> {
+                //cell.evaluate();
+        });
     }
 }

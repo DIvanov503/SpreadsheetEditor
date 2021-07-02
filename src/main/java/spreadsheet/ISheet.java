@@ -1,5 +1,7 @@
 package spreadsheet;
 
+import gui.SheetJTableModel;
+
 /**
  * This interface represents a sheet.
  */

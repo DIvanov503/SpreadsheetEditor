@@ -1,7 +1,5 @@
 package formula.AST;
 
-import java.util.function.BiFunction;
-
 public enum BinaryOperator {
     PLUS,
     MINUS,

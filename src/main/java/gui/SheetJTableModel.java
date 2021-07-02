@@ -19,7 +19,6 @@ public class SheetJTableModel extends AbstractTableModel implements AdjustmentLi
         this.sheet = sheet;
         rowCount = Math.max(sheet.getRowCount(), 70);
         columnCount = Math.max(sheet.getColumnCount(), 30);
-        new TableCellListener();
     }
 
     @Override
@@ -34,17 +33,17 @@ public class SheetJTableModel extends AbstractTableModel implements AdjustmentLi
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        return sheet.getValueAt(rowIndex, columnIndex);
+        return sheet.getCellAt(rowIndex + 1, columnIndex);
     }
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        sheet.setValueAt(aValue, rowIndex, columnIndex);
+        sheet.setValueAt(aValue, rowIndex + 1, columnIndex);/*
         try {
             MainJFrame.getSpreadsheet().calculate();
         } catch (CyclicDependencyException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Override

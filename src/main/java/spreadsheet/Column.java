@@ -11,7 +11,7 @@ import java.util.SortedMap;
 
 public class Column implements IColumn {
     Map<Integer, Cell> cellMap = new HashMap<Integer, Cell>();
-    int colNumber;
+    private int colNumber;
     private final Sheet sheet;
 
 
@@ -31,7 +31,10 @@ public class Column implements IColumn {
     }
 
     public ICell getCellAt(int row) {
-        return cellMap.getOrDefault(row, null);
+        if (cellMap.get(row) == null) {
+            cellMap.put(row, new Cell(this, row, null));
+        }
+        return cellMap.get(row);
     }
 
     @Override
@@ -42,11 +45,7 @@ public class Column implements IColumn {
     @Override
     public void setValueAt(Object value, int row) {
         ICell cell = getCellAt(row);
-        if (cell == null) {
-            cellMap.put(row, new Cell(this, row, value));
-        } else {
-            cell.setValue(value);
-        }
+        cell.setValue(value);
     }
 
     public void save(Element columnElement) {

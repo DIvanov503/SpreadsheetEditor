@@ -6,7 +6,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 
 public class SheetJTable extends JTable {
-    private JTable rowTableHeader = new JTable(new AbstractTableModel() {
+    private final JTable rowTableHeader = new JTable(new AbstractTableModel() {
         @Override
         public int getRowCount() {
             return SheetJTable.this.getRowCount();
@@ -19,7 +19,7 @@ public class SheetJTable extends JTable {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            return rowIndex;
+            return rowIndex + 1;
         }
     });
 
@@ -36,6 +36,8 @@ public class SheetJTable extends JTable {
         rowTableHeader.setDefaultRenderer(Object.class, rowTableHeader.getTableHeader().getDefaultRenderer());
         rowTableHeader.getTableHeader().getColumnModel().getColumn(0).setHeaderValue(" ");
         rowTableHeader.getPreferredScrollableViewportSize().width = rowTableHeader.getColumnModel().getColumn(0).getPreferredWidth();
+        SheetCellEditor cellEditor = new SheetCellEditor(new JTextField());
+        getColumnModel().getColumns().asIterator().forEachRemaining((column) -> column.setCellEditor(cellEditor));
     }
 
     @Override

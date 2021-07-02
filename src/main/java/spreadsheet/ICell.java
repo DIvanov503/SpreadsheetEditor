@@ -1,6 +1,7 @@
 package spreadsheet;
 
 import formula.AST.Formula;
+import formula.parser.ParseErrorException;
 
 /**
  * This interface represents a cell.
@@ -20,7 +21,15 @@ public interface ICell {
 
     ISheet getSheet();
 
-    void setValue(Object value);
+    int getRow();
+
+    int getColumn();
+
+    void setValue(Object value) throws ParseErrorException;
+
+    CellAddress getAddress();
 
     void updateValue(Object value);
+
+    void evaluate();
 }

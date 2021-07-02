@@ -1,43 +1,63 @@
 package formula.evaluator;
 
-import formula.AST.CellReference;
+import spreadsheet.CellAddress;
 import spreadsheet.ICell;
 
 import java.util.*;
+import java.util.concurrent.SynchronousQueue;
 
 public class DependencyGraph {
-    Map<ICell, Set<ICell>> adjacencyMatrix = new HashMap<>();
+    private static final Map<CellAddress, Set<CellAddress>> fromToDependency = new HashMap<>();
+    private static final Map<CellAddress, Set<CellAddress>> toFromDependency = new HashMap<>();
 
-    Map<ICell, Color> colorMap = new HashMap<>();
-    Set<ICell> vertexSet = new HashSet<>();
 
-    List<ICell> sortedCells = new ArrayList<>();
+    private static final Map<CellAddress, Color> colorMap = new HashMap<>();
+    private static final Set<CellAddress> vertexSet = new HashSet<>();
 
-    public void addDependency(ICell from, ICell to) {
-        System.out.println(from+"->"+to);
-        if (adjacencyMatrix.keySet().contains(from)) {
-            adjacencyMatrix.get(from).add(to);
+    private static final List<CellAddress> sortedCells = new ArrayList<>();
+
+    public void addDependency(CellAddress from, CellAddress to) {
+        if (fromToDependency.keySet().contains(from)) {
+            fromToDependency.get(from).add(to);
         } else {
-            Set<ICell> dests = new HashSet<>();
+            Set<CellAddress> dests = new HashSet<>();
             dests.add(to);
-            adjacencyMatrix.put(from, dests);
+            fromToDependency.put(from, dests);
+            System.out.println("test" + fromToDependency.get(from));
+        }
+        if (toFromDependency.keySet().contains(to)) {
+            toFromDependency.get(to).add(from);
+        } else {
+            Set<CellAddress> sources = new HashSet<>();
+            sources.add(from);
+            toFromDependency.put(to, sources);
         }
         vertexSet.add(from);
         vertexSet.add(to);
     }
 
-    public void removeDependenciesFrom(ICell from) {
-        adjacencyMatrix.remove(from);
+    public void removeDependenciesFrom(CellAddress from) {
+        System.out.println("before" + toFromDependency.entrySet());
+        fromToDependency.getOrDefault(from, new LinkedHashSet<>(0))
+                .forEach((to) -> toFromDependency.getOrDefault(to, new LinkedHashSet<>(0)).remove(from));
+        fromToDependency.remove(from);
         vertexSet.clear();
-        vertexSet.addAll(adjacencyMatrix.keySet());
-        adjacencyMatrix.values().forEach((vertices) -> vertexSet.addAll(vertices));
+        vertexSet.addAll(fromToDependency.keySet());
+        fromToDependency.values().forEach((vertices) -> vertexSet.addAll(vertices));
+        System.out.println("after" + toFromDependency.entrySet());
     }
 
-    public List<ICell> topologicalSort() throws CyclicDependencyException {
+    public Set<CellAddress> usedBy(CellAddress cell) {
+        System.out.println(cell + "used by" + toFromDependency.keySet() + toFromDependency.get(cell) +toFromDependency.entrySet());
+        System.out.println(toFromDependency.keySet());
+        return toFromDependency.getOrDefault(cell, new LinkedHashSet<>(0));
+    }
+
+    public List<CellAddress> topologicalSort() throws CyclicDependencyException {
         System.out.println(vertexSet.size());
         sortedCells.clear();
         vertexSet.forEach(v -> colorMap.put(v, Color.White));
-        for (ICell vertex : vertexSet) {
+        for (CellAddress vertex : vertexSet) {
             if (colorMap.get(vertex) == Color.White) {
                 DFSVisit(vertex);
             }
@@ -45,13 +65,13 @@ public class DependencyGraph {
         return sortedCells;
     }
 
-    private void DFSVisit(ICell vertex) throws CyclicDependencyException {
+    private void DFSVisit(CellAddress vertex) throws CyclicDependencyException {
         System.out.println(colorMap.get(vertex));
         if (colorMap.get(vertex) == Color.Gray) {
             throw new CyclicDependencyException();
         }
         colorMap.put(vertex, Color.Gray);
-        for (ICell successor : adjacencyMatrix.getOrDefault(vertex, new HashSet<>(0))) {
+        for (CellAddress successor : fromToDependency.getOrDefault(vertex, new HashSet<>(0))) {
             DFSVisit(successor);
         }
         colorMap.put(vertex, Color.Black);

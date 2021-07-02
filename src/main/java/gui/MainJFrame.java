@@ -126,4 +126,8 @@ public class MainJFrame extends JFrame {
         }
         return saveSpreadsheet(spreadsheet.getFileName());
     }
+
+    public static void redrawTable(){
+        sheetTabbedPane.getSelectedComponent().repaint();
+    }
 }
