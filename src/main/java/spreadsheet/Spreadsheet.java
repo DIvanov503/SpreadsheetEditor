@@ -81,15 +81,13 @@ public class Spreadsheet implements ISpreadsheet {
         Transformer transformer;
         transformer = transformerFactory.newTransformer();
         DOMSource domSource = new DOMSource(document);
-        StreamResult streamResult = new StreamResult(System.out);//(new File(xmlFilePath));
+        StreamResult streamResult = new StreamResult(file);//(new File(xmlFilePath));
 
         try {
             transformer.transform(domSource, streamResult);
         } catch (TransformerException e) {
             e.printStackTrace();
         }
-
-        System.out.println("Done creating XML File");
         writer.flush();
         isModified = false;
     }

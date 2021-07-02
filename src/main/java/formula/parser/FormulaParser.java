@@ -388,11 +388,8 @@ public class FormulaParser {
         Lexer lexer = new Lexer(input);
         while (true) {
             State currentState = (State)stack.peek();
-            System.out.println(currentState.name());
             Token token = lexer.getToken();
-            System.out.println(currentState.name() + "<-" + token.type.name());
             Action action = actionTable[currentState.ordinal()][token.type.ordinal()];
-            System.out.println(action);
             if (action == null) {
                 throw new ParseErrorException("Could not parse the formula");
             } else {
@@ -448,7 +445,6 @@ public class FormulaParser {
                                     stack.push(unExp);
                                 }
                                 case FunctionCall -> {
-                                    System.out.println(stack);
                                     FunctionCall call = new FunctionCall();
                                     stack.pop();
                                     stack.pop();
@@ -468,7 +464,6 @@ public class FormulaParser {
                                         }
                                         case 1 -> {
                                             Object value = stack.pop();
-                                            System.out.println("Arglist" + value + ":" + (value instanceof List<?>));
                                             currentState = (State)stack.peek();
                                             if (value instanceof List<?>) {
                                                 stack.push(value);
@@ -536,7 +531,6 @@ public class FormulaParser {
                                 case SheetCell -> {
                                     String reference = ((Token)stack.pop()).value;
                                     CellReference ref;
-                                    System.out.println(reference + " ????");
                                     if (action.tokenNumber == 3) {
                                         stack.pop();
                                         stack.pop();
@@ -549,8 +543,6 @@ public class FormulaParser {
                                     stack.push(ref);
                                 }
                                 case Lit -> {
-                                    System.out.println(stack);
-                                    System.out.println(stack.peek());
                                     Token litToken = (Token)stack.pop();
                                     switch (litToken.type) {
                                         case STRING -> {
@@ -575,8 +567,6 @@ public class FormulaParser {
                                 }
                             }
                         }
-                        System.out.println(currentState + "->" + goToTable[currentState.ordinal()][action.nonterminal.ordinal()]);
-                        System.out.println(stack);
                         lexer.putToken(token);
                         stack.push(goToTable[currentState.ordinal()][action.nonterminal.ordinal()]);
                     }

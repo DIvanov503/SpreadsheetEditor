@@ -23,7 +23,6 @@ public class DependencyGraph {
             Set<CellAddress> dests = new HashSet<>();
             dests.add(to);
             fromToDependency.put(from, dests);
-            System.out.println("test" + fromToDependency.get(from));
         }
         if (toFromDependency.keySet().contains(to)) {
             toFromDependency.get(to).add(from);
@@ -37,24 +36,19 @@ public class DependencyGraph {
     }
 
     public void removeDependenciesFrom(CellAddress from) {
-        System.out.println("before" + toFromDependency.entrySet());
         fromToDependency.getOrDefault(from, new LinkedHashSet<>(0))
                 .forEach((to) -> toFromDependency.getOrDefault(to, new LinkedHashSet<>(0)).remove(from));
         fromToDependency.remove(from);
         vertexSet.clear();
         vertexSet.addAll(fromToDependency.keySet());
         fromToDependency.values().forEach((vertices) -> vertexSet.addAll(vertices));
-        System.out.println("after" + toFromDependency.entrySet());
     }
 
     public Set<CellAddress> usedBy(CellAddress cell) {
-        System.out.println(cell + "used by" + toFromDependency.keySet() + toFromDependency.get(cell) +toFromDependency.entrySet());
-        System.out.println(toFromDependency.keySet());
         return toFromDependency.getOrDefault(cell, new LinkedHashSet<>(0));
     }
 
     public List<CellAddress> topologicalSort() throws CyclicDependencyException {
-        System.out.println(vertexSet.size());
         sortedCells.clear();
         vertexSet.forEach(v -> colorMap.put(v, Color.White));
         for (CellAddress vertex : vertexSet) {
@@ -66,7 +60,6 @@ public class DependencyGraph {
     }
 
     private void DFSVisit(CellAddress vertex) throws CyclicDependencyException {
-        System.out.println(colorMap.get(vertex));
         if (colorMap.get(vertex) == Color.Gray) {
             throw new CyclicDependencyException();
         }

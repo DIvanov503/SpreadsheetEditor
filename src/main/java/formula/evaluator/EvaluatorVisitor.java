@@ -27,7 +27,6 @@ public class EvaluatorVisitor implements Visitor {
         valueStack.clear();
         this.sheet = cell.getSheet();
         visitFormula(cell.getFormula());
-        System.out.println(valueStack.peek());
         if (valueStack.peek() instanceof Object[][]) {
             throw new TypeErrorException("Cell value cannot be a range of cell values");
         }
@@ -43,7 +42,6 @@ public class EvaluatorVisitor implements Visitor {
     public void visitBinaryExpression(BinaryExpression exp) throws TypeErrorException {
         if (exp.operator == BinaryOperator.RANGE) {
             if (exp.left instanceof CellReference && exp.right instanceof CellReference) {
-                System.out.println("Cell range");
                 CellReference leftCellReference = (CellReference)exp.left, rightCellReference = (CellReference)exp.right;
                 ISheet leftSheet = leftCellReference.sheet == null
                         ? sheet
@@ -72,7 +70,6 @@ public class EvaluatorVisitor implements Visitor {
         }
         exp.left.accept(this);
         exp.right.accept(this);
-        System.out.println(exp.left + " " + exp.right);
         Object right = valueStack.pop(), left = valueStack.pop();
         switch (exp.operator) {
             case PLUS -> {
@@ -236,7 +233,6 @@ public class EvaluatorVisitor implements Visitor {
             }
             case RANGE -> {
                 if (exp.left instanceof CellReference && exp.right instanceof CellReference) {
-                    System.out.println("Cell range");
                     CellReference leftCellReference = (CellReference)exp.left, rightCellReference = (CellReference)exp.right;
                     ISheet leftSheet = leftCellReference.sheet == null
                             ? sheet
@@ -305,7 +301,6 @@ public class EvaluatorVisitor implements Visitor {
             int resultInt = 0;
             boolean isInt = true;
             for (int i = 0; i < call.argumentList.size(); ++i) {
-                System.out.println(isInt);
                 if (args[i] == null) {
                     args[i] = 0;
                 }
@@ -320,7 +315,6 @@ public class EvaluatorVisitor implements Visitor {
                         resultDouble = resultInt;
                     }
                     resultDouble += (Double)args[i];
-                    System.out.println(args[i]);
                     isInt = false;
                 } else if (args[i] instanceof Object[][]) {
                     Object[][] values = (Object[][])args[i];
@@ -357,7 +351,6 @@ public class EvaluatorVisitor implements Visitor {
     @Override
     public void visitCellReference(CellReference ref) {
         ISheet targetSheet = ref.sheet == null ? sheet : sheet.getSpreadsheet().getSheet(ref.sheet);
-        System.out.println("cell" + targetSheet.getValueAt(ref.row, ref.column));
         valueStack.push(targetSheet.getValueAt(ref.row, ref.column));
     }
 

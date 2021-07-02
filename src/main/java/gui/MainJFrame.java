@@ -113,7 +113,6 @@ public class MainJFrame extends JFrame {
     }
 
     public static int saveSpreadsheet() {
-        System.out.println(spreadsheet.getFileName());
         if (spreadsheet.getFileName() == null) {
             SpreadSheetJFileChooser fc = SpreadSheetJFileChooser.getSpreadSheetJFileChooser();
             int returnVal = fc.showOpenDialog(frame);

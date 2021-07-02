@@ -64,7 +64,6 @@ public class Cell implements ICell {
     @Override
     public void setValue(Object value) throws ParseErrorException {
         if (formula != null) {
-            System.out.println("rewrite" + value);
             getSheet().getSpreadsheet().getDependencyGraph().removeDependenciesFrom(address);
         }
         if (value instanceof String) {
@@ -136,9 +135,7 @@ public class Cell implements ICell {
         if (formula == null) {
             return;
         }
-        System.out.println("Eval");
         EvaluatorVisitor.getEvaluatorVisitor().evaluate(this);
-        System.out.println("eval" + getSheet().getSpreadsheet().getDependencyGraph().usedBy(address));
         getSheet().getSpreadsheet().getDependencyGraph().usedBy(address).forEach((address)
                 -> getSheet().getSpreadsheet().getSheet(address.sheetName())
                 .getCellAt(address.row(), address.column()).evaluate());

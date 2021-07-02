@@ -34,7 +34,6 @@ public class Lexer {
                     if (matcher.group(type.name()) == null) {
                         continue;
                     }
-                    System.out.println(type.name() + ":" + matcher.group(type.name()));
                     return new Token(type, matcher.group(type.name()));
                 } catch (IllegalArgumentException e) { }
             }
