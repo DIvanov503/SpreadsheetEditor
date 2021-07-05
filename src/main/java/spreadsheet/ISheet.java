@@ -74,20 +74,6 @@ public interface ISheet {
     void setName(String name);
 
     /**
-     * Get the number of rows
-     *
-     * @return number of rows
-     */
-    int getRowCount();
-
-    /**
-     * Get the number of columns
-     *
-     * @return number of columns
-     */
-    int getColumnCount();
-
-    /**
      * Set insert a value into the sheet
      *
      * @param value to insert
@@ -96,5 +82,10 @@ public interface ISheet {
      */
     void setValueAt(Object value, int row, int col);
 
+    /**
+     * Get parent spreadsheet
+     *
+     * @return parent spreadsheet
+     */
     ISpreadsheet getSpreadsheet();
 }

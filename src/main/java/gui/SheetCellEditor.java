@@ -3,8 +3,6 @@ package gui;
 import spreadsheet.ICell;
 
 import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
-import java.awt.*;
 
 public class SheetCellEditor extends DefaultCellEditor {
     public SheetCellEditor(JTextField textField) {

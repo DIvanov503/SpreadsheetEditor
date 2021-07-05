@@ -3,7 +3,6 @@ package spreadsheet;
 import formula.AST.Formula;
 import formula.evaluator.EvaluatorVisitor;
 import formula.parser.FormulaParser;
-import formula.Type;
 import formula.evaluator.DependencyGraph;
 import formula.evaluator.DependencyVisitor;
 import formula.parser.ParseErrorException;
@@ -15,15 +14,12 @@ public class Cell implements ICell {
     private Formula formula;
     private String formulaRaw;
     private Object value;
-    private Type type = Type.Undef;
-    int row;
-    private Column column;
-    private CellAddress address;
+    private int row;
+    private final Column column;
 
     Cell(Column column, int row) {
         this.row = row;
         this.column = column;
-        address = new CellAddress(getSheet().getName(), row, column.getColNumber());
     }
 
     Cell(Column column, int row, Object value) {
@@ -64,37 +60,32 @@ public class Cell implements ICell {
     @Override
     public void setValue(Object value) throws ParseErrorException {
         if (formula != null) {
-            getSheet().getSpreadsheet().getDependencyGraph().removeDependenciesFrom(address);
+            getSheet().getSpreadsheet().getDependencyGraph().removeDependenciesFrom(getAddress());
         }
-        if (value instanceof String) {
-            String strValue = (String) value;
+        if (value instanceof String strValue) {
+            if (strValue.length() == 0) {
+                this.value = this.formula = null;
+            }
             try {
-                int intValue = Integer.parseInt(strValue);
-                this.value = intValue;
-                type = Type.Int;
+                this.value = Integer.parseInt(strValue);
                 formula = null;
                 formulaRaw = null;
                 return;
-            } catch (NumberFormatException e) { }
+            } catch (NumberFormatException ignored) { }
             try {
-                double doubleValue = Integer.parseInt(strValue);
-                this.value = doubleValue;
-                type = Type.Double;
+                this.value = (double) Integer.parseInt(strValue);
                 formula = null;
                 formulaRaw = null;
                 return;
-            } catch (NumberFormatException e) { }
+            } catch (NumberFormatException ignored) { }
             if (strValue.matches("(true|TRUE|false|FALSE)")) {
-                boolean boolValue = Boolean.parseBoolean(strValue);
-                this.value = boolValue;
-                type = Type.Bool;
+                this.value = Boolean.parseBoolean(strValue);
                 formula = null;
                 formulaRaw = null;
                 return;
             }
             if (strValue.matches("\"[^\"]\"")) {
                 this.value = strValue;
-                type = Type.String;
                 formula = null;
                 formulaRaw = null;
                 return;
@@ -121,7 +112,7 @@ public class Cell implements ICell {
 
     @Override
     public CellAddress getAddress() {
-        return address;
+        return new CellAddress(getSheet().getName(), row, column.getColNumber());
     }
 
     @Override
@@ -136,14 +127,13 @@ public class Cell implements ICell {
             return;
         }
         EvaluatorVisitor.getEvaluatorVisitor().evaluate(this);
-        getSheet().getSpreadsheet().getDependencyGraph().usedBy(address).forEach((address)
+        getSheet().getSpreadsheet().getDependencyGraph().usedBy(getAddress()).forEach((address)
                 -> getSheet().getSpreadsheet().getSheet(address.sheetName())
                 .getCellAt(address.row(), address.column()).evaluate());
     }
 
     public void save(Element cellElement) {
-        cellElement.setAttribute("type", type.name());
-        cellElement.setAttribute("value", value.toString());
+        cellElement.setAttribute("value", value == null ? "" : value.toString());
         cellElement.setAttribute("formula", formulaRaw);
     }
 
@@ -165,12 +155,10 @@ public class Cell implements ICell {
         DependencyVisitor.getDependencyVisitor().addDependencies(dependencyGraph, formula, this);
     }
 
-    public String getCellReference() {
-        return column.getSheet().getName() + "." + ColumnLabelConverter.toLabel(column.getColNumber()) + row;
-    }
-
     @Override
     public String toString() {
-        return value == null ? "" : value.toString();
+        return value == null ? ""
+                : value instanceof String && formula != null ? "\"" + value + "\""
+                : value.toString();
     }
 }

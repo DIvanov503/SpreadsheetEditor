@@ -2,7 +2,6 @@ package spreadsheet;
 
 import formula.evaluator.CyclicDependencyException;
 import formula.evaluator.DependencyGraph;
-import formula.evaluator.EvaluatorVisitor;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -30,7 +29,7 @@ public class Spreadsheet implements ISpreadsheet {
     private final Map<String, Sheet> nameToSheet = new HashMap<>();
     boolean isModified = false;
     String fileName = null;
-    DependencyGraph dependencyGraph = new DependencyGraph();;
+    DependencyGraph dependencyGraph = new DependencyGraph();
 
     @Override
     public void open(String fileName) throws IOException, ParserConfigurationException, SAXException {
@@ -41,15 +40,18 @@ public class Spreadsheet implements ISpreadsheet {
         Document doc = db.parse(new File(fileName));
         Element root = doc.getDocumentElement();
         NodeList childNodeList = root.getChildNodes();
+        List<Element> sheetElementList = new ArrayList<>();
         for (int i = 0; i < childNodeList.getLength(); ++i) {
             Node node = childNodeList.item(i);
             if (node.getNodeType() != Node.ELEMENT_NODE) {
                 continue;
             }
             Element sheetElement = (Element)node;
-            sheetList.add(Sheet.sheetFromXMLElement(this, sheetElement));
+            sheetElementList.add(sheetElement);
+            addSheet(sheetElement.getAttribute("name"));
         }
-        sheetList.forEach((sheet) -> nameToSheet.put(sheet.getName(), sheet));
+        sheetElementList.forEach((sheetElement)
+                -> Sheet.fillSheetFromXMLElement(sheetElement, nameToSheet.get(sheetElement.getAttribute("name"))));
         this.fileName = fileName;
         isModified = false;
     }
@@ -82,7 +84,6 @@ public class Spreadsheet implements ISpreadsheet {
         transformer = transformerFactory.newTransformer();
         DOMSource domSource = new DOMSource(document);
         StreamResult streamResult = new StreamResult(file);//(new File(xmlFilePath));
-
         try {
             transformer.transform(domSource, streamResult);
         } catch (TransformerException e) {
@@ -108,8 +109,12 @@ public class Spreadsheet implements ISpreadsheet {
 
     @Override
     public Sheet addSheet() {
+        return addSheet("Sheet" + (getSheetCount() + 1));
+    }
+
+    private Sheet addSheet(String name) {
         isModified = true;
-        Sheet newSheet = new Sheet(this, "Sheet" + (getSheetCount() + 1));
+        Sheet newSheet = new Sheet(this, name);
         sheetList.add(newSheet);
         nameToSheet.put(newSheet.getName(), newSheet);
         return newSheet;

@@ -14,7 +14,7 @@ public class Lexer {
         if (patternString == null) {
             StringBuilder patternStringBuilder = new StringBuilder();
             for(TokenType token : TokenType.values()) {
-                patternStringBuilder.append("|(?<" + token.name() + ">" + token.pattern + ")");
+                patternStringBuilder.append("|(?<").append(token.name()).append(">").append(token.pattern).append(")");
             }
             patternString = patternStringBuilder.insert(1,"\\s*(").append(")").substring(1);
             pattern = Pattern.compile(patternString);
@@ -35,7 +35,7 @@ public class Lexer {
                         continue;
                     }
                     return new Token(type, matcher.group(type.name()));
-                } catch (IllegalArgumentException e) { }
+                } catch (IllegalArgumentException ignored) { }
             }
         }
         return new Token(TokenType.FAIL);

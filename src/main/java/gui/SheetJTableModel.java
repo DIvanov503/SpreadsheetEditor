@@ -1,8 +1,10 @@
 package gui;
 
-import formula.evaluator.CyclicDependencyException;
+import formula.evaluator.TypeErrorException;
+import formula.parser.ParseErrorException;
 import spreadsheet.ISheet;
 
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.AdjustmentEvent;
@@ -17,8 +19,8 @@ public class SheetJTableModel extends AbstractTableModel implements AdjustmentLi
 
     SheetJTableModel(ISheet sheet) {
         this.sheet = sheet;
-        rowCount = Math.max(sheet.getRowCount(), 70);
-        columnCount = Math.max(sheet.getColumnCount(), 30);
+        rowCount = 70;
+        columnCount = 30;
     }
 
     @Override
@@ -38,7 +40,22 @@ public class SheetJTableModel extends AbstractTableModel implements AdjustmentLi
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        sheet.setValueAt(aValue, rowIndex + 1, columnIndex);/*
+        try {
+            sheet.setValueAt(aValue, rowIndex + 1, columnIndex);
+        } catch (ParseErrorException e) {
+            JOptionPane.showMessageDialog(MainJFrame.getFrame(),
+                    e.getMessage(),
+                    "Formula parse error",
+                    JOptionPane.ERROR_MESSAGE);
+            throw e;
+        } catch (TypeErrorException e) {
+            JOptionPane.showMessageDialog(MainJFrame.getFrame(),
+                    e.getMessage(),
+                    "Formula evaluation error",
+                    JOptionPane.ERROR_MESSAGE);
+            throw e;
+        }
+        /*
         try {
             MainJFrame.getSpreadsheet().calculate();
         } catch (CyclicDependencyException e) {

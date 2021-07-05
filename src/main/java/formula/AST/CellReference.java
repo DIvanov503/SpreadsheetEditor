@@ -21,7 +21,7 @@ public class CellReference implements Expression {
         Matcher matcher = pattern.matcher(reference);
         if (matcher.find()) {
             column = ColumnLabelConverter.toIndex(matcher.group(1));
-            row = Integer.parseInt(matcher.group(2));
+            row = Integer.parseInt(matcher.group(2)) - 1;
         } else {
             column = -1;
             row = -1;

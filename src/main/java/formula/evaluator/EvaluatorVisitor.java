@@ -4,8 +4,6 @@ import formula.AST.*;
 import spreadsheet.ICell;
 import spreadsheet.ISheet;
 
-import java.util.Arrays;
-import java.util.SimpleTimeZone;
 import java.util.Stack;
 
 public class EvaluatorVisitor implements Visitor {
@@ -41,8 +39,7 @@ public class EvaluatorVisitor implements Visitor {
     @Override
     public void visitBinaryExpression(BinaryExpression exp) throws TypeErrorException {
         if (exp.operator == BinaryOperator.RANGE) {
-            if (exp.left instanceof CellReference && exp.right instanceof CellReference) {
-                CellReference leftCellReference = (CellReference)exp.left, rightCellReference = (CellReference)exp.right;
+            if (exp.left instanceof CellReference leftCellReference && exp.right instanceof CellReference rightCellReference) {
                 ISheet leftSheet = leftCellReference.sheet == null
                         ? sheet
                         : sheet.getSpreadsheet().getSheet(leftCellReference.sheet),
@@ -79,14 +76,16 @@ public class EvaluatorVisitor implements Visitor {
                 if (right == null) {
                     right = 0;
                 }
-                if (left instanceof Integer && right instanceof Integer) {
-                    valueStack.push((Integer)left + (Integer)right);
-                } else if  (left instanceof Integer && right instanceof Double) {
-                    valueStack.push((Integer)left + (Double)right);
-                } else if (left instanceof Double && right instanceof Integer) {
-                    valueStack.push((Double)left + (Integer)right);
-                } else if (left instanceof Double && right instanceof Double) {
-                    valueStack.push((Double)left + (Double)right);
+                if (left instanceof Integer leftInt && right instanceof Integer rightInt) {
+                    valueStack.push(leftInt + rightInt);
+                } else if  (left instanceof Integer leftInt && right instanceof Double rightDouble) {
+                    valueStack.push(leftInt + rightDouble);
+                } else if (left instanceof Double leftDouble && right instanceof Integer rightInt) {
+                    valueStack.push(leftDouble + rightInt);
+                } else if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                    valueStack.push(leftDouble + rightDouble);
+                } else if (left instanceof String leftStr && right instanceof String rightStr) {
+                    valueStack.push(leftStr + rightStr);
                 } else {
                     throw new TypeErrorException("Incompatible types");
                 }
@@ -98,14 +97,14 @@ public class EvaluatorVisitor implements Visitor {
                 if (right == null) {
                     right = 0;
                 }
-                if (left instanceof Integer && right instanceof Integer) {
-                    valueStack.push((Integer)left - (Integer)right);
-                } else if  (left instanceof Integer && right instanceof Double) {
-                    valueStack.push((Integer)left - (Double)right);
-                } else if (left instanceof Double && right instanceof Integer) {
-                    valueStack.push((Double)left - (Integer)right);
-                } else if (left instanceof Double && right instanceof Double) {
-                    valueStack.push((Double)left - (Double)right);
+                if (left instanceof Integer leftInt && right instanceof Integer rightInt) {
+                    valueStack.push(leftInt - rightInt);
+                } else if  (left instanceof Integer leftInt && right instanceof Double rightDouble) {
+                    valueStack.push(leftInt - rightDouble);
+                } else if (left instanceof Double leftDouble && right instanceof Integer rightInt) {
+                    valueStack.push(leftDouble - rightInt);
+                } else if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                    valueStack.push(leftDouble - rightDouble);
                 } else {
                     throw new TypeErrorException("Incompatible types");
                 }
@@ -117,18 +116,18 @@ public class EvaluatorVisitor implements Visitor {
                 if (right == null) {
                     right = 0;
                 }
-                double rightDouble;
-                if (right instanceof Integer) {
-                    rightDouble = (Integer)right;
-                } else if (right instanceof Double) {
-                    rightDouble = (Double)right;
+                double rightValue;
+                if (right instanceof Integer rightInt) {
+                    rightValue = rightInt;
+                } else if (right instanceof Double rightDouble) {
+                    rightValue = rightDouble;
                 } else {
                     throw new TypeErrorException("Incompatible types");
                 }
-                if  (left instanceof Integer) {
-                    valueStack.push((Integer)left / rightDouble);
-                } else if (left instanceof Double) {
-                    valueStack.push((Double) left / rightDouble);
+                if  (left instanceof Integer leftInt) {
+                    valueStack.push(leftInt / rightValue);
+                } else if (left instanceof Double leftDouble) {
+                    valueStack.push(leftDouble / rightValue);
                 } else {
                     throw new TypeErrorException("Incompatible types");
                 }
@@ -140,33 +139,29 @@ public class EvaluatorVisitor implements Visitor {
                 if (right == null) {
                     right = 0;
                 }
-                if (left instanceof Integer && right instanceof Integer) {
-                    valueStack.push((Integer)left * (Integer)right);
-                } else if  (left instanceof Integer && right instanceof Double) {
-                    valueStack.push((Integer)left * (Double)right);
-                } else if (left instanceof Double && right instanceof Integer) {
-                    valueStack.push((Double)left * (Integer)right);
-                } else if (left instanceof Double && right instanceof Double) {
-                    valueStack.push((Double)left * (Double)right);
+                if (left instanceof Integer leftInt && right instanceof Integer rightInt) {
+                    valueStack.push(leftInt * rightInt);
+                } else if  (left instanceof Integer leftInt && right instanceof Double rightDouble) {
+                    valueStack.push(leftInt * rightDouble);
+                } else if (left instanceof Double leftDouble && right instanceof Integer rightInt) {
+                    valueStack.push(leftDouble * rightInt);
+                } else if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                    valueStack.push(leftDouble * rightDouble);
                 } else {
                     throw new TypeErrorException("Incompatible types");
                 }
             }
-            case EQ -> {
-                valueStack.push(left.equals(right));
-            }
-            case NEQ -> {
-                valueStack.push(!left.equals(right));
-            }
+            case EQ -> valueStack.push(left.equals(right));
+            case NEQ -> valueStack.push(!left.equals(right));
             case GE -> {
-                if (left instanceof Integer && right instanceof Integer) {
-                    valueStack.push((Integer)left >= (Integer)right);
-                } else if  (left instanceof Integer && right instanceof Double) {
-                    valueStack.push((Integer)left >= (Double)right);
-                } else if (left instanceof Double && right instanceof Integer) {
-                    valueStack.push((Double)left >= (Integer)right);
-                } else if (left instanceof Double && right instanceof Double) {
-                    valueStack.push((Double)left >= (Double)right);
+                if (left instanceof Integer leftInt && right instanceof Integer rightInt) {
+                    valueStack.push(leftInt >= rightInt);
+                } else if  (left instanceof Integer leftInt && right instanceof Double rightDouble) {
+                    valueStack.push(leftInt >= rightDouble);
+                } else if (left instanceof Double leftDouble && right instanceof Integer rightInt) {
+                    valueStack.push(leftDouble >= rightInt);
+                } else if (left instanceof Double leftDouble && right instanceof Double rightDouble) {
+                    valueStack.push(leftDouble >= rightDouble);
                 } else {
                     throw new TypeErrorException("Incompatible types");
                 }
@@ -225,15 +220,21 @@ public class EvaluatorVisitor implements Visitor {
                 }
             }
             case POW -> {
-                if (left instanceof Number && right instanceof Number) {
+                if (left instanceof Integer && right instanceof Integer) {
+                    valueStack.push(Math.pow((Integer)left, (Integer)right));
+                } else if  (left instanceof Integer && right instanceof Double) {
+                    valueStack.push(Math.pow((Integer)left, (Double)right));
+                } else if (left instanceof Double && right instanceof Integer) {
+                    valueStack.push(Math.pow((Double)left, (Integer)right));
+                } else if (left instanceof Double && right instanceof Double) {
                     valueStack.push(Math.pow((Double)left, (Double)right));
                 } else {
                     throw new TypeErrorException("Incompatible types");
                 }
             }
             case RANGE -> {
-                if (exp.left instanceof CellReference && exp.right instanceof CellReference) {
-                    CellReference leftCellReference = (CellReference)exp.left, rightCellReference = (CellReference)exp.right;
+                if (exp.left instanceof CellReference leftCellReference
+                        && exp.right instanceof CellReference rightCellReference) {
                     ISheet leftSheet = leftCellReference.sheet == null
                             ? sheet
                             : sheet.getSpreadsheet().getSheet(leftCellReference.sheet),
@@ -254,14 +255,11 @@ public class EvaluatorVisitor implements Visitor {
                         }
                     }
                     valueStack.push(values);
-                    return;
                 } else {
                     throw new TypeErrorException("Cell range must be done on cells");
                 }
             }
-            default -> {
-                throw new TypeErrorException("Unsupported operator " + exp.operator.name());
-            }
+            default -> throw new TypeErrorException("Unsupported operator " + exp.operator.name());
         }
     }
 
@@ -313,11 +311,11 @@ public class EvaluatorVisitor implements Visitor {
                 } else if (args[i] instanceof Double) {
                     if (isInt) {
                         resultDouble = resultInt;
+                    } else {
+                        resultDouble += (Double)args[i];
                     }
-                    resultDouble += (Double)args[i];
                     isInt = false;
-                } else if (args[i] instanceof Object[][]) {
-                    Object[][] values = (Object[][])args[i];
+                } else if (args[i] instanceof Object[][] values) {
                     for (int j = 0; j < values.length; ++j) {
                         for (int k = 0; k < values[j].length; ++k) {
                             if (values[j][k] == null) {
@@ -332,9 +330,10 @@ public class EvaluatorVisitor implements Visitor {
                             } else if (values[j][k] instanceof Double) {
                                 if (isInt) {
                                     resultDouble = resultInt;
+                                } else {
+                                    resultDouble += (Double) values[j][k];
+                                    isInt = false;
                                 }
-                                resultDouble += (Double)values[j][k];
-                                isInt = false;
                             }
                         }
                     }
@@ -367,6 +366,11 @@ public class EvaluatorVisitor implements Visitor {
     @Override
     public void visitDoubleNumber(DoubleNumber num) {
         valueStack.push(num.value);
+    }
+
+    @Override
+    public void visitBooleanValue(BooleanValue b) {
+        valueStack.push(b.value);
     }
 
     @Override

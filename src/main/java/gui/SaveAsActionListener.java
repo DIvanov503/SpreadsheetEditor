@@ -8,8 +8,8 @@ import java.io.File;
 
 public class SaveAsActionListener implements ActionListener {
 
-    private Component parent;
-    private JFileChooser fc = SpreadSheetJFileChooser.getSpreadSheetJFileChooser();
+    private final Component parent;
+    private final JFileChooser fc = SpreadSheetJFileChooser.getSpreadSheetJFileChooser();
 
     SaveAsActionListener(Component parent){
         this.parent = parent;

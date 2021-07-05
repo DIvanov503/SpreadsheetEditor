@@ -6,14 +6,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class SpreadSheetJFileChooser extends JFileChooser {
 
-    private static FileFilter fileFilters[] = {
-            new FileNameExtensionFilter("OpenDocument spreadsheet (*.ods)", "ods")
+    private static final FileFilter[] fileFilters = {
+            new FileNameExtensionFilter("OpenDocument spreadsheet (*.spreadsheet)", "spreadsheet")
     };
 
     private static SpreadSheetJFileChooser spreadSheetJFileChooser;
 
     private SpreadSheetJFileChooser() {
-        for (FileFilter ff : this.fileFilters) {
+        for (FileFilter ff : fileFilters) {
             addChoosableFileFilter(ff);
         }
     }

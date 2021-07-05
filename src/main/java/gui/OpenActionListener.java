@@ -4,14 +4,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 
 public class OpenActionListener implements ActionListener {
 
-    private Component parent;
-    private JFileChooser fc = SpreadSheetJFileChooser.getSpreadSheetJFileChooser();
+    private final Component parent;
+    private final JFileChooser fc = SpreadSheetJFileChooser.getSpreadSheetJFileChooser();
 
     OpenActionListener(Component parent){
         this.parent = parent;

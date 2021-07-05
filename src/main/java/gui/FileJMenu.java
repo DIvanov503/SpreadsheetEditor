@@ -32,10 +32,6 @@ public class FileJMenu extends JMenu {
         JMenuItem exitJMenuItem = new JMenuItem("Exit");
         exitJMenuItem.setMnemonic(KeyEvent.VK_X);
         add(exitJMenuItem);
-        exitJMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
+        exitJMenuItem.addActionListener(e -> System.exit(0));
     }
 }

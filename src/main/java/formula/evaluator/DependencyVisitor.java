@@ -4,8 +4,6 @@ import formula.AST.*;
 import spreadsheet.ICell;
 import spreadsheet.ISheet;
 
-import java.util.Arrays;
-
 public class DependencyVisitor implements Visitor {
 
     private static DependencyGraph dependencyGraph;
@@ -24,7 +22,7 @@ public class DependencyVisitor implements Visitor {
     }
 
     public boolean addDependencies(DependencyGraph dependencyGraph, Formula formula, ICell cell) {
-        this.dependencyGraph = dependencyGraph;
+        DependencyVisitor.dependencyGraph = dependencyGraph;
         this.cell = cell;
         dependenciesFound = false;
         visitFormula(formula);
@@ -39,8 +37,8 @@ public class DependencyVisitor implements Visitor {
     @Override
     public void visitBinaryExpression(BinaryExpression exp) {
         if (exp.operator == BinaryOperator.RANGE) {
-            if (exp.left instanceof CellReference && exp.right instanceof CellReference) {
-                CellReference leftCellReference = (CellReference)exp.left, rightCellReference = (CellReference)exp.right;
+            if (exp.left instanceof CellReference leftCellReference
+                    && exp.right instanceof CellReference rightCellReference) {
                 ISheet leftSheet = leftCellReference.sheet == null
                         ? cell.getSheet()
                         : cell.getSheet().getSpreadsheet().getSheet(leftCellReference.sheet),
@@ -57,6 +55,7 @@ public class DependencyVisitor implements Visitor {
                 for (int i = topRow; i <= bottomRow; ++i) {
                     for (int j = leftColumn; j <= rightColumn; ++j) {
                         dependencyGraph.addDependency(cell.getAddress(), leftSheet.getCellAt(i, j).getAddress());
+                        System.out.println("dep" + cell.getAddress() + leftSheet.getCellAt(i, j).getAddress());
                     }
                 }
             }
@@ -95,6 +94,11 @@ public class DependencyVisitor implements Visitor {
 
     @Override
     public void visitDoubleNumber(DoubleNumber num) {
+
+    }
+
+    @Override
+    public void visitBooleanValue(BooleanValue b) {
 
     }
 

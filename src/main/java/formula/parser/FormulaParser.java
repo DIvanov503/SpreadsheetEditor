@@ -207,7 +207,8 @@ public class FormulaParser {
                 State.ArgList2)) {
             for (TokenType type : List.of(TokenType.INT,
                     TokenType.DOUBLE,
-                    TokenType.STRING)) {
+                    TokenType.STRING,
+                    TokenType.BOOLEAN)) {
                 actionTable[state.ordinal()][type.ordinal()] = actionList.get(0);
             }
             actionTable[state.ordinal()][TokenType.ID.ordinal()] = actionList.get(1);
@@ -411,7 +412,7 @@ public class FormulaParser {
                             switch (action.nonterminal) {
                                 case BoolAdd, BoolMul, Comp, NumAdd, NumMul, NumPow -> {
                                     BinaryExpression exp = new BinaryExpression();
-                                    exp.left = (Expression)stack.pop();
+                                    exp.right = (Expression)stack.pop();
                                     stack.pop();
                                     exp.operator = switch (((Token)stack.pop()).type) {
                                         case EQ -> BinaryOperator.EQ;
@@ -430,7 +431,7 @@ public class FormulaParser {
                                         default -> throw new InternalError("Unexpected token on stack");
                                     };
                                     stack.pop();
-                                    exp.right = (Expression)stack.pop();
+                                    exp.left = (Expression)stack.pop();
                                     currentState = (State)stack.peek();
                                     stack.push(exp);
                                 }
@@ -547,7 +548,7 @@ public class FormulaParser {
                                     switch (litToken.type) {
                                         case STRING -> {
                                             StringLiteral lit = new StringLiteral();
-                                            lit.value = litToken.value;
+                                            lit.value = litToken.value.substring(1, litToken.value.length() - 1);
                                             currentState = (State)stack.peek();
                                             stack.push(lit);
                                         }
@@ -562,6 +563,12 @@ public class FormulaParser {
                                             num.value = Double.parseDouble(litToken.value);
                                             currentState = (State)stack.peek();
                                             stack.push(num);
+                                        }
+                                        case BOOLEAN -> {
+                                            BooleanValue b = new BooleanValue();
+                                            b.value = Boolean.parseBoolean(litToken.value);
+                                            currentState = (State)stack.peek();
+                                            stack.push(b);
                                         }
                                     }
                                 }

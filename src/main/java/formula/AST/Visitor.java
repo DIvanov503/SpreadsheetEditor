@@ -11,5 +11,6 @@ public interface Visitor {
     void visitParenExpression(ParenExpression exp) throws TypeErrorException;
     void visitIntegerNumber(IntegerNumber num);
     void visitDoubleNumber(DoubleNumber num);
+    void visitBooleanValue(BooleanValue b);
     void visitStringLiteral(StringLiteral lit);
 }

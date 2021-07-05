@@ -8,8 +8,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 
 public class SheetJTabbedPane extends JTabbedPane {
-    private JComponent newSheetComponent;
-    private NewSheetComponentListener newSheetComponentListener = new NewSheetComponentListener(this);
+    private final JComponent newSheetComponent;
+    private final NewSheetComponentListener newSheetComponentListener;
 
     SheetJTabbedPane(ISpreadsheet spreadsheet) {
         for (ISheet sheet : spreadsheet) {
@@ -41,7 +41,7 @@ public class SheetJTabbedPane extends JTabbedPane {
         newSheetComponent.addComponentListener(newSheetComponentListener);
     }
 
-    private class NewSheetComponentListener implements ComponentListener {
+    private static class NewSheetComponentListener implements ComponentListener {
 
         SheetJTabbedPane sheetJTabbedPane;
 

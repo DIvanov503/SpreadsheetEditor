@@ -79,7 +79,7 @@ public interface ISpreadsheet extends Iterable<ISheet> {
     /**
      * Get a sheet by given name
      *
-     * @param index index of the sheet
+     * @param name name of the sheet
      */
     ISheet getSheet(String name);
 

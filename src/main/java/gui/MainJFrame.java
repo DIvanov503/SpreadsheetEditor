@@ -44,7 +44,6 @@ public class MainJFrame extends JFrame {
     }
 
     public static MainJFrame getFrame(String fileName) {
-        String errorMessage = null;
         try {
             spreadsheet = SpreadsheetOpener.open(fileName);
         } catch (Exception e) {

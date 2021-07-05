@@ -1,10 +1,8 @@
 package formula.evaluator;
 
 import spreadsheet.CellAddress;
-import spreadsheet.ICell;
 
 import java.util.*;
-import java.util.concurrent.SynchronousQueue;
 
 public class DependencyGraph {
     private static final Map<CellAddress, Set<CellAddress>> fromToDependency = new HashMap<>();
@@ -17,14 +15,14 @@ public class DependencyGraph {
     private static final List<CellAddress> sortedCells = new ArrayList<>();
 
     public void addDependency(CellAddress from, CellAddress to) {
-        if (fromToDependency.keySet().contains(from)) {
+        if (fromToDependency.containsKey(from)) {
             fromToDependency.get(from).add(to);
         } else {
             Set<CellAddress> dests = new HashSet<>();
             dests.add(to);
             fromToDependency.put(from, dests);
         }
-        if (toFromDependency.keySet().contains(to)) {
+        if (toFromDependency.containsKey(to)) {
             toFromDependency.get(to).add(from);
         } else {
             Set<CellAddress> sources = new HashSet<>();
@@ -41,7 +39,7 @@ public class DependencyGraph {
         fromToDependency.remove(from);
         vertexSet.clear();
         vertexSet.addAll(fromToDependency.keySet());
-        fromToDependency.values().forEach((vertices) -> vertexSet.addAll(vertices));
+        fromToDependency.values().forEach(vertexSet::addAll);
     }
 
     public Set<CellAddress> usedBy(CellAddress cell) {

@@ -1,7 +1,7 @@
 package formula.parser;
 
 public enum TokenType {
-    DOUBLE("(-?[0-9]+|[0-9]*)(\\.[0-9]+|[eE][+-]?[0-9]+)"),
+    DOUBLE("(-?[0-9]+)(\\.[0-9]+|[eE][+-]?[0-9]+)"),
     INT("-?[0-9]+"),
     BOOLEAN("(TRUE|FALSE|true|false)"),
     STRING("\"[^\"]*\""),

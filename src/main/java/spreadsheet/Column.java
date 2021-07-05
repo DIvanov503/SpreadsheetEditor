@@ -50,10 +50,12 @@ public class Column implements IColumn {
 
     public void save(Element columnElement) {
         cellMap.forEach((rowNum, cell) -> {
-            Element cellElement = columnElement.getOwnerDocument().createElement("cell");
-            columnElement.appendChild(cellElement);
-            cellElement.setAttribute("index", rowNum.toString());
-            cell.save(cellElement);
+            if (cell.getValue() != null) {
+                Element cellElement = columnElement.getOwnerDocument().createElement("cell");
+                columnElement.appendChild(cellElement);
+                cellElement.setAttribute("index", rowNum.toString());
+                cell.save(cellElement);
+            }
         });
     }
 

@@ -1,20 +1,15 @@
 package spreadsheet;
 
-import formula.evaluator.DependencyGraph;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Sheet implements ISheet {
-    private Map<Integer, Column> columnMap = new HashMap<Integer, Column>();
+    private final Map<Integer, Column> columnMap = new HashMap<>();
     private String name = "Sheet1";
-    private int rowCount = 0;
-    private int columnCount = 0;
     private final Spreadsheet spreadsheet;
 
     public Sheet(Spreadsheet spreadsheet) {
@@ -92,16 +87,6 @@ public class Sheet implements ISheet {
     }
 
     @Override
-    public int getRowCount() {
-        return rowCount;
-    }
-
-    @Override
-    public int getColumnCount() {
-        return columnCount;
-    }
-
-    @Override
     public Spreadsheet getSpreadsheet() {
         return spreadsheet;
     }
@@ -116,15 +101,16 @@ public class Sheet implements ISheet {
         sheetElement.setAttribute("name", name);
         columnMap.forEach((colNum, column) -> {
             Element columnElement = sheetElement.getOwnerDocument().createElement("column");
-            sheetElement.appendChild(columnElement);
             columnElement.setAttribute("index", colNum.toString());
             column.save(columnElement);
+            if (columnElement.getChildNodes().getLength() != 0) {
+                sheetElement.appendChild(columnElement);
+            }
         });
     }
 
-    public static Sheet sheetFromXMLElement(Spreadsheet spreadsheet, Element sheetElement) {
-        Sheet result = new Sheet(spreadsheet);
-        result.setName(sheetElement.getAttribute("name"));
+    public static void fillSheetFromXMLElement(Element sheetElement, Sheet targetSheet) {
+        targetSheet.setName(sheetElement.getAttribute("name"));
         NodeList childNodeList = sheetElement.getChildNodes();
         for (int i = 0; i < childNodeList.getLength(); ++i) {
             Node node = childNodeList.item(i);
@@ -132,13 +118,8 @@ public class Sheet implements ISheet {
                 continue;
             }
             Element columnElement = (Element)node;
-            result.columnMap.put(Integer.parseInt(columnElement.getAttribute("index")),
-                    Column.columnFromXMLElement(result, columnElement));
+            targetSheet.columnMap.put(Integer.parseInt(columnElement.getAttribute("index")),
+                    Column.columnFromXMLElement(targetSheet, columnElement));
         }
-        return result;
-    }
-
-    public void addDependencies(DependencyGraph dependencyGraph){
-        columnMap.values().forEach(column -> column.addDependencies(dependencyGraph));
     }
 }
